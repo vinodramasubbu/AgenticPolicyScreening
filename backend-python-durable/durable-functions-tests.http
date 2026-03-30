@@ -1,0 +1,96 @@
+@host = http://localhost:7071
+@contentType = application/json
+
+###
+# Health check (Functions host)
+GET {{host}}/api/cases/non-existent/status
+
+###
+# Start a new policy screening orchestration
+# @name startCase
+POST {{host}}/api/orchestrators/policy-screening
+Content-Type: {{contentType}}
+
+{
+  "applicantName": "Taylor Brooks",
+  "age": 42,
+  "requestedCoverage": 650000,
+  "annualIncome": 120000,
+  "smoker": false,
+  "priorClaims": 1,
+  "region": "MA",
+  "productType": "term_life",
+  "policyTermYears": 20,
+  "occupationClass": "medium",
+  "creditBand": "good",
+  "debtToIncomeRatio": 0.34,
+  "bmi": 26.1,
+  "hasChronicCondition": false
+}
+
+###
+# Capture orchestration instance id from Durable start response
+@instanceId = {{startCase.response.body.$.id}}
+
+###
+# Poll orchestration status via your custom status endpoint
+# Run this a few times until phase is awaiting_underwriter_approval
+GET {{host}}/api/cases/{{instanceId}}/status
+Accept: {{contentType}}
+
+###
+# List all cases waiting for underwriter decision
+GET {{host}}/api/cases/pending
+Accept: {{contentType}}
+
+###
+# Ask AI about a specific case recommendation
+POST {{host}}/api/cases/{{instanceId}}/chat
+Content-Type: {{contentType}}
+
+{
+  "question": "Why is this case marked manual_review and what data influenced that outcome?"
+}
+
+###
+# Alternative poll using built-in Durable status URL from start response
+GET {{startCase.response.body.$.statusQueryGetUri}}
+Accept: {{contentType}}
+
+###
+# Submit underwriter approval to resume the orchestration
+# @name approveCase
+POST {{host}}/api/cases/{{instanceId}}/decision
+Content-Type: {{contentType}}
+
+{
+  "decision": "approve",
+  "notes": "Risk acceptable after AI screening.",
+  "underwriter": "Senior Underwriter"
+}
+
+###
+# Submit underwriter rejection (alternative path)
+# Use this request instead of approveCase for rejection scenarios
+POST {{host}}/api/cases/{{instanceId}}/decision
+Content-Type: {{contentType}}
+
+{
+  "decision": "reject",
+  "notes": "Declined due to combined fraud and medical indicators.",
+  "underwriter": "Senior Underwriter"
+}
+
+###
+# Get final orchestration result after underwriter decision
+GET {{host}}/api/cases/{{instanceId}}/status
+Accept: {{contentType}}
+
+###
+# Validation test: start request with missing fields (expect 400)
+POST {{host}}/api/orchestrators/policy-screening
+Content-Type: {{contentType}}
+
+{
+  "applicantName": "Invalid Payload"
+}

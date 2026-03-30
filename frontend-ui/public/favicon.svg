@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Insurance Shield">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#115e59"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#f2efe6"/>
+  <path d="M32 8l18 7v14c0 13-8.5 23.2-18 27-9.5-3.8-18-14-18-27V15l18-7z" fill="url(#g)"/>
+  <path d="M22 31l7 7 13-13" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

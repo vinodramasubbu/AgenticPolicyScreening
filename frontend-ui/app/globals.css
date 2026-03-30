@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #1f2a22;
+  --canvas: #f2efe6;
+  --sand: #e6deca;
+  --accent: #0f766e;
+  --warn: #9a3412;
+  --muted: #5e5a52;
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 10%, #e7f7ef 0%, transparent 40%),
+    radial-gradient(circle at 90% 0%, #f7edd9 0%, transparent 45%),
+    var(--canvas);
+  color: var(--ink);
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+}

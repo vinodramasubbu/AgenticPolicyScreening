@@ -1,0 +1,23 @@
+# Node / Next
+node_modules/
+.next/
+out/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Azure/local runtime
+local.settings.json
+__azurite_db_*.json
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+*.log
+
+# OS/editor
+.vscode/
+.DS_Store
+Thumbs.db
