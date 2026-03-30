@@ -123,6 +123,29 @@ def _validate_policy_payload(payload: Dict[str, Any]) -> tuple[list[str], list[s
     return errors, warnings
 
 
+def _to_decision_document(result: Dict[str, Any]) -> Dict[str, Any]:
+    record_id = result.get("id")
+    if not record_id:
+        record_id = f"{result.get('policyId', 'POL-UNKNOWN')}-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}"
+
+    return {
+        "id": record_id,
+        "policyId": result.get("policyId"),
+        "instanceId": result.get("instanceId"),
+        "applicantName": result.get("applicantName"),
+        "finalStatus": result.get("finalStatus"),
+        "underwriterDecision": result.get("underwriterDecision"),
+        "underwriter": result.get("underwriter"),
+        "underwriterNotes": result.get("underwriterNotes"),
+        "decisionTimestampUtc": result.get("decisionTimestampUtc"),
+        "backendRecommendation": result.get("backendRecommendation"),
+        "compositeScore": result.get("compositeScore"),
+        "recommendedPremiumFactor": result.get("recommendedPremiumFactor"),
+        "pricingRecommendation": result.get("pricingRecommendation"),
+        "writtenAtUtc": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 @app.route(route="orchestrators/policy-screening", methods=["POST"])
 @app.durable_client_input(client_name="client")
 async def start_policy_screening(req: func.HttpRequest, client: df.DurableOrchestrationClient):
@@ -494,11 +517,15 @@ def PolicyScreeningOrchestrator(context: df.DurableOrchestrationContext):
     final_result = yield context.call_activity(
         "FinalizeCaseActivity",
         {
+            "instanceId": context.instance_id,
             "policy": policy,
             "recommendation": recommendation,
             "underwriterDecision": underwriter_decision,
         },
     )
+
+    cosmos_write = yield context.call_activity("PersistDecisionActivity", final_result)
+    final_result["cosmosWrite"] = cosmos_write
 
     context.set_custom_status(
         {
@@ -836,6 +863,7 @@ Synthesize into a recommendation (approve/manual_review/decline) with reasoning.
 
 @app.activity_trigger(input_name="payload")
 def FinalizeCaseActivity(payload: Dict[str, Any]):
+    instance_id = payload.get("instanceId")
     policy = payload.get("policy", {})
     recommendation = payload.get("recommendation", {})
     decision = payload.get("underwriterDecision", {})
@@ -861,7 +889,8 @@ def FinalizeCaseActivity(payload: Dict[str, Any]):
     decision_value = str(decision.get("decision", "reject")).strip().lower()
     approved = decision_value == "approve"
 
-    return {
+    result = {
+        "instanceId": instance_id,
         "policyId": f"POL-{abs(hash(policy.get('applicantName', 'anon'))) % 999999:06d}",
         "applicantName": policy.get("applicantName"),
         "underwriter": decision.get("underwriter", "Lead Underwriter"),
@@ -873,4 +902,25 @@ def FinalizeCaseActivity(payload: Dict[str, Any]):
         "recommendedPremiumFactor": recommendation.get("recommendedPremiumFactor"),
         "pricingRecommendation": recommendation.get("pricingRecommendation"),
         "finalStatus": "approved" if approved else "rejected",
+    }
+
+    return result
+
+
+@app.activity_trigger(input_name="payload")
+@app.cosmos_db_output(
+    arg_name="decisionDocument",
+    database_name="%COSMOS_DATABASE_NAME%",
+    container_name="%COSMOS_CONTAINER_NAME%",
+    connection="COSMOS_CONNECTION",
+)
+def PersistDecisionActivity(payload: Dict[str, Any], decisionDocument: func.Out[func.Document]):
+    document = _to_decision_document(payload)
+    decisionDocument.set(func.Document.from_dict(document))
+
+    return {
+        "status": "succeeded",
+        "database": os.getenv("COSMOS_DATABASE_NAME", "policydb"),
+        "container": os.getenv("COSMOS_CONTAINER_NAME", "decision"),
+        "id": document["id"],
     }
