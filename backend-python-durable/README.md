@@ -10,28 +10,6 @@ This backend exposes a complete policy screening and underwriter workflow using 
 - Underwriter decision external-event resume flow
 - Case-specific Q&A endpoint for recommendation explanations
 
-## Architecture Diagram
-```mermaid
-flowchart TD
-    S[Start Case API<br/>POST /orchestrators/policy-screening] --> O[PolicyScreeningOrchestrator]
-    O --> A1[RiskAssessmentActivity]
-    O --> A2[FraudCheckActivity]
-    O --> A3[MedicalReviewActivity]
-    O --> A4[ComplianceCheckActivity]
-    A1 --> AGG[AggregateRecommendationActivity]
-    A2 --> AGG
-    A3 --> AGG
-    A4 --> AGG
-    AGG --> WAIT[wait_for_external_event<br/>UnderwriterDecision]
-    WAIT --> FIN[FinalizeCaseActivity]
-    FIN --> OUT[Final Output]
-
-    Q[Chat API<br/>POST /cases/{id}/chat] --> CS[Load Durable Case Status]
-    CS --> QA[UnderwriterQnAAgent]
-
-    O -. persisted state .- DTS[Durable Task Scheduler]
-```
-
 ## Intake Model and Validation
 The intake endpoint validates and normalizes inputs before orchestration starts.
 
