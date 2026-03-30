@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Host": {
+    "CORS": "http://localhost:3000",
+    "CORSCredentials": false
+  },
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "Endpoint=https://durable-task-sc-xxxxxxx.eastus2.durabletask.io;Authentication=DefaultAzure",
+    "TASKHUB_NAME": "insurance-screening",
+    "FOUNDRY_PROJECT_ENDPOINT":"https://xxxx-resource.services.ai.azure.com/api/projects/xxxxx",
+    "FOUNDRY_MODEL_DEPLOYMENT_NAME":"gpt-5.4",
+    "COSMOS_ENDPOINT": "https://xxxxxxx.documents.azure.com:443/",
+    "COSMOS_CONNECTION__accountEndpoint": "https://xxxxxx.documents.azure.com:443/",
+    "COSMOS_DATABASE_NAME": "policydb",
+    "COSMOS_CONTAINER_NAME": "decision",
+    "COSMOS_PARTITION_KEY_PATH": "/id"
+  }
+}
