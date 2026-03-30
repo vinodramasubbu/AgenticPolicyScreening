@@ -109,12 +109,12 @@ flowchart LR
    E --> F[Custom Status: awaiting_underwriter_approval]
    F --> G[Underwriter Queue UI<br/>/underwriter]
 
-   G --> H[POST /api/cases/{id}/decision]
+   G --> H[POST /api/cases/:id/decision]
    H --> I[External Event: UnderwriterDecision]
    I --> J[FinalizeCaseActivity]
    J --> K[Case Output + Final Decision]
 
-   G --> L[POST /api/cases/{id}/chat]
+   G --> L[POST /api/cases/:id/chat]
    L --> M[UnderwriterQnAAgent<br/>Grounded on case context]
    M --> G
 
