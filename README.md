@@ -7,6 +7,28 @@ This workspace contains a realistic insurance policy screening demo with:
 - Underwriter queue, approval workflow, and case-specific recommendation chat
 - Pricing recommendation support and structured validation
 
+## Tech Stack
+### Frontend
+- Next.js 14 (App Router) + React 18
+- TypeScript
+- Tailwind CSS
+- Native `fetch`-based API integration to backend endpoints
+
+### Backend
+- Azure Functions (Python v2 programming model)
+- Azure Durable Functions (orchestration, activity, and external event patterns)
+- Durable Task Scheduler (DTS) for orchestration state management
+- Microsoft Agent Framework (`agent-framework-azure-ai`, `agent-framework-core`)
+- Azure AI Agent Server SDK (`azure-ai-agentserver-agentframework`, `azure-ai-agentserver-core`)
+- Azure Identity (`DefaultAzureCredential`) for identity-based auth
+- Cosmos DB output binding for decision persistence
+
+### Local Tooling and Runtime
+- Azure Functions Core Tools (`func`)
+- Azurite (local Azure Storage emulator)
+- DTS emulator container
+- Node.js + npm (frontend build/dev)
+
 ## What Is Implemented
 - User-friendly intake form that calculates technical fields behind the scenes.
    - `occupationClass` is inferred from a friendly occupation profile.
